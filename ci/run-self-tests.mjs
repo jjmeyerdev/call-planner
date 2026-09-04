@@ -194,11 +194,26 @@ async function main() {
   ], { stdio: "ignore" });
 
   let client;
+  let exitCode = 1;
+
+  /* Tearing down must never change the verdict. Chrome is still
+     flushing its profile as it dies, so deleting the directory the
+     instant after SIGKILL loses a race with it - wait for the
+     process to actually exit, retry the removal, and swallow
+     whatever is left. It is a temp directory either way. */
   const cleanup = async () => {
-    client?.close();
-    chrome.kill("SIGKILL");
-    server.close();
-    await rm(profile, { recursive: true, force: true });
+    try {
+      client?.close();
+      server.close();
+
+      const exited = new Promise((resolve) => chrome.once("exit", resolve));
+      chrome.kill("SIGKILL");
+      await Promise.race([exited, new Promise((r) => setTimeout(r, 5_000))]);
+
+      await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    } catch {
+      /* Leaving a temp directory behind is not a test failure. */
+    }
   };
 
   const timer = setTimeout(async () => {
@@ -234,16 +249,16 @@ async function main() {
     }
 
     console.log(`\n${summary.passed}/${summary.total} checks passed.`);
-
-    clearTimeout(timer);
-    await cleanup();
-    process.exit(summary.failed === 0 ? 0 : 1);
+    exitCode = summary.failed === 0 ? 0 : 1;
   } catch (error) {
     console.error("\nSelf-test run failed: " + error.message);
+    exitCode = 1;
+  } finally {
     clearTimeout(timer);
     await cleanup();
-    process.exit(1);
   }
+
+  process.exit(exitCode);
 }
 
 main();
