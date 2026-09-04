@@ -1,0 +1,915 @@
+/* ==============================================================
+   components.css
+   --------------------------------------------------------------
+   The individual pieces of the interface, in the order they
+   appear on screen.
+   ============================================================== */
+
+/* ==============================================================
+   PIPELINE
+
+   Five named stages joined by a rule. This genuinely is a
+   sequence, which is what earns it a numbered treatment.
+   ============================================================== */
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: var(--gap-wide);
+  counter-reset: stage;
+}
+
+.pipeline__step {
+  counter-increment: stage;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--size-small);
+  color: var(--ink-faint);
+  padding-right: 1.1rem;
+}
+
+.pipeline__step::before {
+  content: counter(stage);
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-pill);
+  color: var(--ink-faint);
+}
+
+.pipeline__step:not(:last-child)::after {
+  content: "";
+  width: 1.1rem;
+  height: 1px;
+  background: var(--rule-strong);
+  margin-left: 0.35rem;
+}
+
+.pipeline__step.is-done {
+  color: var(--ink-soft);
+}
+
+.pipeline__step.is-done::before {
+  border-color: var(--purple);
+  background: var(--purple);
+  color: var(--ink-invert);
+}
+
+.pipeline__step.is-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pipeline__step.is-current::before {
+  border-color: var(--purple);
+  color: var(--purple);
+  box-shadow: inset 0 0 0 2px var(--purple-tint);
+}
+
+/* ==============================================================
+   SEGMENT SWITCH
+   ============================================================== */
+
+.segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.segment__option {
+  background: none;
+  border: 0;
+  padding: 0.45rem 0.3rem;
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.segment__option + .segment__option {
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.segment__option:hover:not(:disabled):not(.is-active) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink-invert);
+}
+
+.segment__option.is-active {
+  background: var(--ink-invert);
+  color: var(--purple);
+}
+
+.segment__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ==============================================================
+   OFFLINE INTEGRITY
+   ============================================================== */
+
+.integrity {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+  padding: 0.7rem;
+}
+
+.integrity__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: var(--radius-pill);
+  margin-top: 0.4rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.integrity[data-state="pass"] .integrity__dot { background: #6ee7a8; }
+.integrity[data-state="fail"] .integrity__dot { background: var(--gold-bright); }
+
+.integrity[data-state="fail"] {
+  border-color: var(--gold-bright);
+}
+
+.integrity__status {
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+.integrity__detail {
+  font-size: var(--size-micro);
+  color: rgba(255, 255, 255, 0.66);
+  overflow-wrap: anywhere;
+}
+
+/* ==============================================================
+   BUTTONS
+   ============================================================== */
+
+.button {
+  display: inline-block;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.95rem;
+  font-size: var(--size-small);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.button--primary {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--ink-invert);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--purple-deep);
+  border-color: var(--purple-deep);
+  color: var(--ink-invert);
+}
+
+.button--quiet {
+  background: none;
+  border-color: transparent;
+  color: var(--ink-soft);
+}
+
+.button--quiet:hover:not(:disabled) {
+  color: var(--purple);
+  border-color: var(--rule-strong);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  font-size: var(--size-small);
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--ink-invert);
+}
+
+/* ==============================================================
+   FORM FIELDS
+   ============================================================== */
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--gap);
+}
+
+.field label {
+  display: block;
+  font-size: var(--size-small);
+  font-weight: 600;
+  margin-bottom: var(--gap-hair);
+}
+
+.field select,
+.field input {
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.45rem 0.55rem;
+  font-size: var(--size-body);
+}
+
+.field select:focus-visible,
+.field input:focus-visible {
+  border-color: var(--purple);
+}
+
+.field__hint {
+  margin-top: var(--gap-hair);
+  font-size: var(--size-micro);
+  color: var(--ink-faint);
+}
+
+/* ==============================================================
+   FILE INTAKE
+   ============================================================== */
+
+.intake-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: var(--gap);
+}
+
+.dropzone {
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface-sunk);
+  padding: var(--gap-wide);
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.is-over {
+  border-color: var(--purple);
+  border-style: solid;
+  background: var(--purple-tint);
+}
+
+.dropzone__title {
+  font-size: var(--size-lead);
+  margin-bottom: var(--gap-hair);
+}
+
+.dropzone__copy {
+  color: var(--ink-soft);
+  font-size: var(--size-small);
+  margin-bottom: var(--gap);
+  max-width: 46ch;
+}
+
+.filelist {
+  margin-top: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filelist li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  font-size: var(--size-small);
+}
+
+.filelist__name {
+  font-weight: 600;
+}
+
+.filelist__meta {
+  color: var(--ink-faint);
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+}
+
+/* ==============================================================
+   NOTICES
+   ============================================================== */
+
+.notice {
+  margin-top: var(--gap);
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--purple);
+  background: var(--purple-tint);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: var(--size-small);
+}
+
+.notice[data-tone="warn"] {
+  border-left-color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.notice[data-tone="fail"] {
+  border-left-color: var(--fail);
+  background: var(--fail-tint);
+}
+
+.notice[data-tone="pass"] {
+  border-left-color: var(--pass);
+  background: var(--pass-tint);
+}
+
+.notice ul {
+  margin-top: var(--gap-tight);
+  list-style: disc;
+  padding-left: 1.1rem;
+}
+
+/* ==============================================================
+   LEDGER STRIP
+
+   The reconciliation figures. Read left to right as an equation,
+   not as a row of identical statistic cards.
+   ============================================================== */
+
+.ledger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.ledger__item {
+  flex: 1 1 8rem;
+  padding: 0.7rem 0.9rem;
+  border-right: 1px solid var(--rule);
+}
+
+.ledger__item:last-child {
+  border-right: 0;
+}
+
+.ledger__item--total {
+  background: var(--purple);
+  color: var(--ink-invert);
+}
+
+.ledger__value {
+  font-family: var(--font-data);
+  font-size: var(--size-head);
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger__label {
+  font-size: var(--size-micro);
+  color: var(--ink-faint);
+  margin-top: 0.15rem;
+}
+
+.ledger__item--total .ledger__label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.ledger__item[data-tone="warn"] .ledger__value { color: var(--warn); }
+.ledger__item[data-tone="fail"] .ledger__value { color: var(--fail); }
+.ledger__item[data-tone="pass"] .ledger__value { color: var(--pass); }
+
+/* ==============================================================
+   TABLES
+   ============================================================== */
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.table-scroll--tall {
+  max-height: 30rem;
+  overflow-y: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--size-small);
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--purple);
+  color: var(--ink-invert);
+  font-size: var(--size-micro);
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--surface-sunk);
+}
+
+.data-table .cell-id {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  white-space: nowrap;
+}
+
+.data-table .cell-wide {
+  min-width: 22rem;
+}
+
+.data-table td[data-tone="warn"] { color: var(--warn); font-weight: 600; }
+.data-table td[data-tone="fail"] { color: var(--fail); font-weight: 600; }
+.data-table td[data-tone="pass"] { color: var(--pass); font-weight: 600; }
+
+/* ==============================================================
+   DISCLOSURE
+   ============================================================== */
+
+.disclosure {
+  margin-top: var(--gap);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--gap-tight);
+}
+
+.disclosure summary {
+  cursor: pointer;
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--purple);
+  padding: 0.3rem 0;
+}
+
+.disclosure summary::marker {
+  color: var(--rule-strong);
+}
+
+.disclosure > .table-scroll {
+  margin-top: var(--gap-tight);
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+/* ==============================================================
+   CHECKLIST
+
+   Validation results. The status bar on the left is the signal;
+   the words carry the meaning.
+   ============================================================== */
+
+.checklist {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.checklist li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: var(--gap);
+  align-items: baseline;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  border-left: 3px solid transparent;
+}
+
+.checklist li:last-child {
+  border-bottom: 0;
+}
+
+.checklist li[data-status="PASS"] { border-left-color: var(--pass); }
+.checklist li[data-status="WARN"] { border-left-color: var(--warn); background: var(--warn-tint); }
+.checklist li[data-status="FAIL"] { border-left-color: var(--fail); background: var(--fail-tint); }
+
+.checklist__status {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.checklist li[data-status="PASS"] .checklist__status { color: var(--pass); }
+.checklist li[data-status="WARN"] .checklist__status { color: var(--warn); }
+.checklist li[data-status="FAIL"] .checklist__status { color: var(--fail); }
+
+.checklist__label {
+  font-weight: 600;
+}
+
+.checklist__detail {
+  display: block;
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: var(--size-small);
+}
+
+/* ==============================================================
+   CONSOLIDATION GROUPS
+   ============================================================== */
+
+.group {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  margin-bottom: var(--gap-tight);
+}
+
+.group__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gap-tight);
+  margin-bottom: var(--gap-tight);
+}
+
+.group__id {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  font-weight: 700;
+  color: var(--purple);
+}
+
+.group__score {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  color: var(--ink-faint);
+}
+
+.group__reasons {
+  color: var(--ink-soft);
+  font-size: var(--size-small);
+  margin-bottom: var(--gap-tight);
+}
+
+.group__members {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--gap-tight);
+}
+
+.group__member {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--gap-tight);
+  padding: 0.35rem 0.5rem;
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  font-size: var(--size-small);
+}
+
+.group__member-id {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+}
+
+.group__member:first-child {
+  border-left: 3px solid var(--purple);
+}
+
+.group__decision {
+  display: flex;
+  gap: var(--gap);
+  font-size: var(--size-small);
+}
+
+.group__decision label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+/* ==============================================================
+   CALLS
+
+   The centrepiece. A call is a chained sequence of scenarios read
+   top to bottom by a tester on the phone, so it is drawn as one:
+   a numbered run of steps down a rule, with the step that ends
+   the call marked in gold.
+   ============================================================== */
+
+.calls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-wide);
+}
+
+.call {
+  border-top: 2px solid var(--purple);
+  padding-top: var(--gap);
+}
+
+.call__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: var(--gap-hair);
+}
+
+.call__number {
+  font-family: var(--font-data);
+  font-size: var(--size-head);
+  font-weight: 700;
+  color: var(--purple);
+  font-variant-numeric: tabular-nums;
+}
+
+.call__name {
+  font-size: var(--size-lead);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.call__count {
+  margin-left: auto;
+  font-size: var(--size-micro);
+  color: var(--ink-faint);
+  font-family: var(--font-data);
+}
+
+.call__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: var(--gap);
+}
+
+.chip {
+  font-size: var(--size-micro);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.55rem;
+  color: var(--ink-soft);
+  background: var(--surface-sunk);
+}
+
+.chip--population {
+  border-color: var(--purple-line);
+  background: var(--purple-tint);
+  color: var(--purple);
+  font-weight: 600;
+}
+
+.chip--terminal {
+  border-color: var(--gold);
+  background: var(--gold-tint);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.call__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.9rem;
+  border-left: 2px solid var(--purple-line);
+}
+
+.call__step {
+  position: relative;
+  padding: 0 0 var(--gap) 0;
+}
+
+.call__step:last-child {
+  padding-bottom: 0;
+}
+
+/* The tick on the rule. A square, sitting on the line, numbered. */
+.call__step::before {
+  content: attr(data-step);
+  position: absolute;
+  left: -2.65rem;
+  top: 0.05rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--purple);
+  background: var(--surface);
+  border: 1px solid var(--purple-line);
+  border-radius: 2px;
+}
+
+.call__step.is-terminal::before {
+  color: var(--surface);
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.call__step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.call__step-id {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  font-weight: 700;
+}
+
+.call__step-intent {
+  font-size: var(--size-micro);
+  color: var(--ink-faint);
+}
+
+.call__step-text {
+  font-size: var(--size-small);
+  color: var(--ink-soft);
+  max-width: 76ch;
+}
+
+.call__step-note {
+  font-size: var(--size-micro);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.call__guidance {
+  margin-top: var(--gap);
+  padding-left: 1.9rem;
+  font-size: var(--size-small);
+  color: var(--ink-soft);
+  max-width: 76ch;
+}
+
+.call__script-toggle {
+  margin-top: var(--gap-tight);
+  margin-left: 1.9rem;
+}
+
+.call__script {
+  margin: var(--gap-tight) 0 0 1.9rem;
+  padding: var(--gap);
+  background: var(--surface-sunk);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* ==============================================================
+   BLOCKED SCENARIOS
+   ============================================================== */
+
+.blocked-list {
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--gold-tint);
+}
+
+.blocked-list li {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: var(--gap);
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid rgba(158, 124, 12, 0.25);
+  font-size: var(--size-small);
+}
+
+.blocked-list li:last-child {
+  border-bottom: 0;
+}
+
+.blocked-list .cell-id {
+  font-family: var(--font-data);
+  font-size: var(--size-micro);
+  font-weight: 700;
+}
+
+/* ==============================================================
+   DIALOG
+   ============================================================== */
+
+.dialog {
+  width: min(52rem, 92vw);
+  max-height: 84vh;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: rgba(24, 15, 77, 0.55);
+}
+
+.dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: var(--gap) var(--gap-wide);
+  background: var(--purple);
+  color: var(--ink-invert);
+}
+
+.dialog__head h2 {
+  font-size: var(--size-lead);
+}
+
+.dialog__head .button--quiet {
+  color: var(--ink-invert);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.dialog__head .button--quiet:hover {
+  color: var(--purple);
+  background: var(--ink-invert);
+}
+
+.dialog__head {
+  flex: 0 0 auto;
+}
+
+.dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--gap-wide);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Without this the summary strip is squeezed to nothing by the
+   scrolling column above it. */
+.dialog__body > * {
+  flex: 0 0 auto;
+}
+
+.calls__group {
+  font-size: var(--size-small);
+  font-weight: 700;
+  color: var(--purple);
+  padding-bottom: var(--gap-hair);
+  border-bottom: 1px solid var(--purple-line);
+}
+
+.calls__group:not(:first-child) {
+  margin-top: var(--gap-band);
+}

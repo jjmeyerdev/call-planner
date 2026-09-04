@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "sourceMetadata": {
+    "generatedBy": "Approved upstream workflow",
+    "generatedAt": "2026-08-29T09:20:00Z",
+    "sourceFiles": ["VendorA_Segment_B_Flow_Pack.pdf"]
+  },
+  "scenarios": [
+    {
+      "scenarioId": "GB-AUTH-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Identity_Verification", "category": "Entry",
+      "scenario": "An active caller verifies identity with member ID and date of birth.",
+      "conditions": ["Active user"],
+      "expectedOutcome": "Authentication successful and the caller reaches the main menu.",
+      "sourcePassCriteria": "Identity is confirmed and the main menu is offered.",
+      "populationApplicability": ["Population A", "Population B", "Population C"],
+      "routingIdPopA": "555-030-1000", "routingIdPopB": "555-030-2000", "routingIdPopC": "555-030-3000",
+      "testDataPopA": "Population A active user", "testDataPopB": "Population B active user",
+      "testDataPopC": "Population C active user",
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 2"
+    },
+    {
+      "scenarioId": "GB-ELIG-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Enrollment / Eligibility", "category": "Happy Path",
+      "scenario": "An authenticated caller asks for coverage status and effective date.",
+      "conditions": ["Active user"],
+      "expectedOutcome": "The system provides the coverage status and the effective date.",
+      "sourcePassCriteria": "Both values match the staged account.",
+      "populationApplicability": ["Population A", "Population B", "Population C"],
+      "routingIdPopA": "555-030-1000", "routingIdPopB": "555-030-2000", "routingIdPopC": "555-030-3000",
+      "testDataPopA": "Population A active user", "testDataPopB": "Population B active user",
+      "testDataPopC": "Population C active user",
+      "dependencies": ["GB-AUTH-001"],
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 4"
+    },
+    {
+      "scenarioId": "GB-BEN-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Program Details", "category": "Happy Path",
+      "scenario": "A caller asks for the remaining deductible on the current program year.",
+      "expectedOutcome": "The system provides the remaining deductible.",
+      "sourcePassCriteria": "The figure matches the staged accumulator.",
+      "populationApplicability": ["Population A", "Population B"],
+      "routingIdPopA": "555-030-1000", "routingIdPopB": "555-030-2000",
+      "testDataPopA": "Population A partial accumulator", "testDataPopB": "Population B partial accumulator",
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 7"
+    },
+    {
+      "scenarioId": "GB-CLM-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Records", "category": "Happy Path",
+      "scenario": "A caller asks about a single paid record from a recent date of service.",
+      "conditions": ["Single record", "Paid record"],
+      "expectedOutcome": "The system provides the record status and the amount.",
+      "sourcePassCriteria": "Both values match the staged record.",
+      "populationApplicability": ["Population A", "Population B", "Population C"],
+      "routingIdPopA": "555-030-1000", "routingIdPopB": "555-030-2000", "routingIdPopC": "555-030-3000",
+      "testDataPopA": "Population A paid record", "testDataPopB": "Population B paid record",
+      "testDataPopC": "Population C paid record",
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 10"
+    },
+    {
+      "scenarioId": "GB-PAY-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Billing", "category": "Happy Path",
+      "scenario": "A caller asks for the outstanding premium balance.",
+      "expectedOutcome": "The system provides the outstanding balance.",
+      "sourcePassCriteria": "The balance matches the staged billing record.",
+      "populationApplicability": ["Population C"],
+      "routingIdPopC": "555-030-3000", "testDataPopC": "Population C with outstanding balance",
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 13"
+    },
+    {
+      "scenarioId": "GB-DOM-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Special Account Closure", "category": "Guardrail",
+      "scenario": "A caller reports a death on the account and the guardrail prohibits self service.",
+      "expectedOutcome": "The system explains the request must be handled by an agent and transfers.",
+      "sourcePassCriteria": "The guardrail message plays and the call transfers.",
+      "populationApplicability": ["Population A", "Population B", "Population C"],
+      "routingIdPopA": "555-030-1000", "routingIdPopB": "555-030-2000", "routingIdPopC": "555-030-3000",
+      "terminalType": "TRANSFER",
+      "mockStaging": "Staging", "sourceValidationStatus": "SOURCE_VALIDATED",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 16"
+    },
+    {
+      "scenarioId": "GB-DEMO-001", "vendor": "VendorA", "businessSegment": "GB",
+      "releaseDate": "2026-11-02", "intent": "Profile_Maintenance", "category": "Happy Path",
+      "scenario": "A caller updates the phone number held on the account.",
+      "expectedOutcome": "The system confirms the new phone number has been saved.",
+      "sourcePassCriteria": "The number is read back and confirmed as saved.",
+      "populationApplicability": [],
+      "mockStaging": "Staging", "sourceValidationStatus": "CLARIFICATION_REQUIRED",
+      "clarificationNeeded": "The source does not say which populations this flow is released to.",
+      "sourceFile": "VendorA_Segment_B_Flow_Pack.pdf", "sourceLocation": "Page 19"
+    }
+  ]
+}

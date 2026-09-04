@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- The offline guarantee, first layer. Chrome and Edge enforce this
+     on a local file. Firefox and Safari do not enforce it reliably on
+     file:// URLs, which is why js/00-integrity.js also closes every
+     network API by hand and audits the page after it loads. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self' file:;
+  style-src 'self' file: 'unsafe-inline';
+  img-src 'self' file: data:;
+  font-src 'self' file:;
+  connect-src 'none';
+  object-src 'none';
+  base-uri 'none';
+  form-action 'none';
+">
+
+<title>Call Planner</title>
+
+<!-- An empty data URI, so the browser stops asking for /favicon.ico.
+     A real icon file would be one more thing to ship and to audit. -->
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+
+<body>
+
+<a class="skip-link" href="#stage">Skip to content</a>
+
+<div class="app">
+
+  <!-- ==========================================================
+       LEFT SPINE
+       ========================================================== -->
+  <nav class="spine" aria-label="Workspace">
+
+    <div class="spine__brand">
+      <span class="spine__mark" aria-hidden="true"></span>
+      <span class="spine__name">Call Planner</span>
+      <span class="spine__sub">Offline test planning</span>
+    </div>
+
+    <ul class="spine__nav">
+      <li>
+        <button type="button" class="spine__link is-current"
+                data-view="intake" aria-current="page">
+          <span class="spine__link-title">Intake</span>
+          <span class="spine__link-note" id="navIntakeNote">No package loaded</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="spine__link" data-view="plan" disabled>
+          <span class="spine__link-title">Call plan</span>
+          <span class="spine__link-note" id="navPlanNote">Waiting on scenarios</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="spine__block">
+      <h2 class="spine__heading">Business segment</h2>
+
+      <div class="segment" role="radiogroup" aria-label="Business segment">
+        <button type="button" class="segment__option is-active"
+                data-segment="CB" role="radio" aria-checked="true">
+          Segment A
+        </button>
+        <button type="button" class="segment__option"
+                data-segment="GB" role="radio" aria-checked="false">
+          Segment B
+        </button>
+      </div>
+
+      <p class="spine__note" id="segmentNote">
+        Segment A scenarios run once each.
+      </p>
+
+      <p class="spine__lock" id="segmentLock" hidden>
+        Locked while scenarios are loaded. Clearing the workspace unlocks it.
+      </p>
+    </div>
+
+    <div class="spine__block spine__block--foot">
+      <div class="integrity" id="integrityPanel" data-state="pending">
+        <span class="integrity__dot" aria-hidden="true"></span>
+        <div>
+          <p class="integrity__status" id="integrityStatus">Checking offline integrity</p>
+          <p class="integrity__detail" id="integrityDetail">Auditing page resources.</p>
+        </div>
+      </div>
+
+      <button type="button" class="link-button" id="openSelfTestBtn">
+        Run the built-in test suite
+      </button>
+
+      <p class="spine__build" id="buildStamp"></p>
+    </div>
+  </nav>
+
+  <!-- ==========================================================
+       STAGE
+       ========================================================== -->
+  <main class="stage" id="stage" tabindex="-1">
+
+    <header class="stage__head">
+      <h1 class="stage__title" id="stageTitle">Intake</h1>
+      <p class="stage__lede" id="stageLede">
+        Load a scenario package, see exactly what was accepted, and settle
+        anything that needs a decision before planning calls.
+      </p>
+
+      <ol class="pipeline" id="pipeline" aria-label="Progress">
+        <li class="pipeline__step is-current" data-step="import">Import</li>
+        <li class="pipeline__step" data-step="validate">Validate</li>
+        <li class="pipeline__step" data-step="consolidate">Consolidate</li>
+        <li class="pipeline__step" data-step="optimize">Optimize</li>
+        <li class="pipeline__step" data-step="export">Export</li>
+      </ol>
+    </header>
+
+    <!-- ========================================================
+         VIEW: INTAKE
+         ======================================================== -->
+    <div class="view" id="view-intake">
+
+      <section class="panel" aria-labelledby="settingsHeading">
+        <h2 class="panel__title" id="settingsHeading">Run settings</h2>
+        <p class="panel__note">
+          Vendor and release date are call boundaries: scenarios from two
+          vendors, or two releases, never share a call. A package that names
+          them per scenario overrides what you choose here.
+        </p>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="vendorSelect">Vendor</label>
+            <select id="vendorSelect"></select>
+          </div>
+
+          <div class="field">
+            <label for="releaseInput">Release date</label>
+            <input type="date" id="releaseInput">
+            <p class="field__hint">Stored as YYYY-MM-DD.</p>
+          </div>
+
+          <div class="field">
+            <label for="maxPerCallSelect">Maximum scenarios per call</label>
+            <select id="maxPerCallSelect"></select>
+            <p class="field__hint" id="preferredMinimumHint"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="importHeading">
+        <h2 class="panel__title" id="importHeading">Load scenarios</h2>
+
+        <div class="intake-grid">
+
+          <div class="dropzone" id="packageZone" tabindex="0" role="button"
+               aria-describedby="packageZoneCopy">
+            <h3 class="dropzone__title">Scenario package</h3>
+            <p class="dropzone__copy" id="packageZoneCopy">
+              A <code>.json</code> file written to schema
+              <span id="schemaVersionLabel"></span>. Every row is checked
+              field by field, and every row is reported back to you, whether
+              it was accepted or not.
+            </p>
+            <span class="button button--primary">Choose a package</span>
+            <input type="file" id="packageInput" accept=".json,application/json" hidden>
+          </div>
+
+          <div class="dropzone" id="sheetZone" tabindex="0" role="button"
+               aria-describedby="sheetZoneCopy">
+            <h3 class="dropzone__title">Spreadsheet export</h3>
+            <p class="dropzone__copy" id="sheetZoneCopy">
+              A <code>.csv</code> or <code>.tsv</code> file. In Excel choose
+              File, Save As, CSV UTF-8. Column headings are matched against
+              the known layouts, so they do not need renaming.
+            </p>
+            <span class="button">Choose a spreadsheet</span>
+            <input type="file" id="sheetInput" accept=".csv,.tsv,text/csv" hidden>
+          </div>
+
+        </div>
+
+        <ul class="filelist" id="fileList"></ul>
+
+        <div class="notice" id="importNotice" hidden></div>
+      </section>
+
+      <section class="panel" id="reconciliationPanel" aria-labelledby="reconHeading" hidden>
+        <h2 class="panel__title" id="reconHeading">What came in</h2>
+        <p class="panel__note">
+          The figures below always add up. Nothing is dropped without
+          appearing here first.
+        </p>
+
+        <div class="ledger" id="ledgerStrip"></div>
+
+        <details class="disclosure" id="ledgerDetails">
+          <summary>Row-by-row disposition</summary>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Row</th>
+                  <th scope="col">Scenario ID</th>
+                  <th scope="col">Disposition</th>
+                  <th scope="col">Detail</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerBody"></tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="action-row">
+          <button type="button" class="button" id="exportLedgerBtn">
+            Save the intake ledger
+          </button>
+          <button type="button" class="button button--quiet" id="clearWorkspaceBtn">
+            Clear the workspace
+          </button>
+        </div>
+      </section>
+
+      <section class="panel" id="consolidationPanel" aria-labelledby="consolidationHeading" hidden>
+        <h2 class="panel__title" id="consolidationHeading">Possible repeats</h2>
+        <p class="panel__note" id="consolidationNote"></p>
+
+        <div id="consolidationGroups"></div>
+
+        <div class="action-row" id="consolidationActions" hidden>
+          <button type="button" class="button button--primary" id="applyConsolidationBtn">
+            Apply these decisions
+          </button>
+        </div>
+      </section>
+
+      <section class="panel" id="libraryPanel" aria-labelledby="libraryHeading" hidden>
+        <h2 class="panel__title" id="libraryHeading">Scenario library</h2>
+        <p class="panel__note" id="libraryNote"></p>
+
+        <div class="table-scroll table-scroll--tall">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Scenario ID</th>
+                <th scope="col">Intent</th>
+                <th scope="col">Scenario</th>
+                <th scope="col">Populations</th>
+                <th scope="col">Device</th>
+                <th scope="col">ANI</th>
+                <th scope="col">Ends call</th>
+                <th scope="col">Source</th>
+              </tr>
+            </thead>
+            <tbody id="libraryBody"></tbody>
+          </table>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="button button--primary" id="optimizeBtn">
+            Plan the calls
+          </button>
+          <button type="button" class="button" id="exportLibraryBtn">
+            Save the scenario library
+          </button>
+        </div>
+
+        <div class="notice" id="optimizeNotice" hidden></div>
+      </section>
+
+    </div>
+
+    <!-- ========================================================
+         VIEW: CALL PLAN
+         ======================================================== -->
+    <div class="view" id="view-plan" hidden>
+
+      <section class="panel panel--tight" aria-labelledby="planSummaryHeading">
+        <h2 class="panel__title" id="planSummaryHeading">Plan summary</h2>
+        <div class="ledger" id="planStrip"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="validationHeading">
+        <h2 class="panel__title" id="validationHeading">Validation</h2>
+        <p class="panel__note">
+          The plan checks itself against every hard boundary. A failure here
+          means the plan must not be used.
+        </p>
+        <ul class="checklist" id="validationList"></ul>
+      </section>
+
+      <section class="panel" id="blockedPanel" aria-labelledby="blockedHeading" hidden>
+        <h2 class="panel__title" id="blockedHeading">Held back</h2>
+        <p class="panel__note" id="blockedNote"></p>
+        <ul class="blocked-list" id="blockedList"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="callsHeading">
+        <h2 class="panel__title" id="callsHeading">Calls</h2>
+        <p class="panel__note" id="callsNote"></p>
+
+        <div class="calls" id="callsList"></div>
+      </section>
+
+      <section class="panel panel--tight" aria-labelledby="exportHeading">
+        <h2 class="panel__title" id="exportHeading">Export</h2>
+        <p class="panel__note">
+          A CSV holds one sheet, so the workbook arrives as separate files.
+          Your browser may ask once for permission to save several at a time.
+        </p>
+        <div class="action-row">
+          <button type="button" class="button button--primary" id="exportPlanBtn">
+            Save the call plan
+          </button>
+          <button type="button" class="button button--quiet" id="backToIntakeBtn">
+            Back to intake
+          </button>
+        </div>
+        <div class="notice" id="exportNotice" hidden></div>
+      </section>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     SELF-TEST DIALOG
+     ============================================================ -->
+<dialog class="dialog" id="selfTestDialog">
+  <form method="dialog" class="dialog__head">
+    <h2>Built-in test suite</h2>
+    <button class="button button--quiet" value="close">Close</button>
+  </form>
+
+  <div class="dialog__body">
+    <p class="panel__note">
+      Twenty checks covering the hard boundaries, the capacity limits,
+      duplicate handling, import validation, determinism, and the offline
+      guarantee. They run against data built in memory and touch nothing
+      you have loaded.
+    </p>
+    <div class="ledger" id="selfTestStrip"></div>
+    <ul class="checklist" id="selfTestList"></ul>
+  </div>
+</dialog>
+
+<!-- ============================================================
+     SCRIPTS
+
+     Plain script tags, loaded in numbered order. No modules, no
+     bundler, no build step: open index.html and it runs.
+     ============================================================ -->
+<script src="js/00-integrity.js"></script>
+<script src="js/01-constants.js"></script>
+<script src="js/02-utils.js"></script>
+<script src="js/03-classify.js"></script>
+<script src="js/04-model.js"></script>
+<script src="js/05-schema.js"></script>
+<script src="js/06-import.js"></script>
+<script src="js/07-consolidate.js"></script>
+<script src="js/08-optimizer.js"></script>
+<script src="js/09-export.js"></script>
+<script src="js/10-selftest.js"></script>
+<script src="js/11-ui.js"></script>
+
+</body>
+</html>

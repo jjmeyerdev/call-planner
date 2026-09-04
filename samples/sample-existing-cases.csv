@@ -1,0 +1,9 @@
+Scenario Number,Category,Scenario,Routing ID,Mock / Staging,Test Persona,Pass Criteria,Mock Data Persona
+LEG-001,Entry,"An active caller with a recognized ANI verifies identity with member ID and date of birth.",555-010-1000,Staging,Active primary user,"Identity is confirmed and the main menu is offered.","Active user, recognized ANI"
+LEG-002,Happy Path,"An authenticated caller asks for coverage status and the effective date.",555-010-1000,Staging,Active primary user,"The coverage status and effective date are both provided.",Active user
+LEG-003,Happy Path,"The authenticated caller requests coverage status and the effective date is provided.",555-010-1000,Staging,Active primary user,"Coverage status and the effective date are provided to the caller.",Active user
+LEG-004,Fallback,"A caller on a landline requests a replacement member card and cannot receive a text message.",555-010-1000,Staging,Active primary user,"No text message is sent and physical mail is confirmed.",Active user on a landline
+LEG-005,Happy Path,"A caller on a mobile handset requests a replacement member card by text message.",555-010-1000,Staging,Active primary user,"A confirmation is spoken and a text message is sent.",Active user on a mobile handset
+LEG-006,Guardrail,"A caller asks to cancel service; the privacy restriction prohibits self service and the system disconnects.",555-010-1000,Staging,Active primary user,"The guardrail message plays and the call ends.",Active user
+LEG-007,Error,"The billing service returns a system failure while the caller asks for a balance.",555-010-1000,Mock,Active primary user,"An error message plays and a transfer is offered.",Billing service forced failure
+LEG-008,Happy Path,"A caller asks about a single paid record from a recent date of service.",555-010-1000,Staging,Active primary user,"The record status, date of service and amount are provided.",Active user with one paid record

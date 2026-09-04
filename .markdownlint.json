@@ -1,0 +1,4 @@
+{
+  "//": "MD013 (line length) is off because every violation in this project is a table row, and a markdown table row cannot be wrapped. Prose is hand-wrapped at 78 columns.",
+  "MD013": false
+}
