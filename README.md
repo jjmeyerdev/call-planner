@@ -1,5 +1,6 @@
 # Call Planner
 
+[![Self-tests](https://github.com/jjmeyerdev/call-planner/actions/workflows/self-test.yml/badge.svg)](https://github.com/jjmeyerdev/call-planner/actions/workflows/self-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An offline workspace that turns a validated list of test scenarios into a
