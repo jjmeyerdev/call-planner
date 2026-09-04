@@ -154,17 +154,30 @@ function connect(url) {
 
 /* The page is polled rather than raced against a load event: the
    twelve scripts are plain tags with no module graph, so the only
-   reliable signal that they are all in is QA.selftest existing. */
+   signal that they are all in is QA.selftest existing.
+
+   That alone is not enough to start. 00-integrity.js runs its
+   resource audit on DOMContentLoaded, which is after 10-selftest.js
+   has parsed, so QA.selftest can exist while QA.integrity.status()
+   is still PENDING - and check T20 asserts the audit passed, not
+   that it is pending. Waiting for both makes the run depend on the
+   page being ready rather than on how fast the machine is. */
 const RUN_IN_PAGE = `
   new Promise((resolve, reject) => {
     const deadline = Date.now() + 30000;
     (function tick() {
-      if (window.QA && QA.selftest && typeof QA.selftest.run === "function") {
+      const loaded = window.QA && QA.selftest && typeof QA.selftest.run === "function";
+      const audited = window.QA && QA.integrity && QA.integrity.status().status !== "PENDING";
+
+      if (loaded && audited) {
         try { resolve(QA.selftest.run()); } catch (error) { reject(error); }
         return;
       }
       if (Date.now() > deadline) {
-        reject(new Error("QA.selftest never appeared - a script probably failed to load."));
+        reject(new Error(
+          "Page never became ready. QA.selftest present: " + Boolean(loaded) +
+          ", integrity audit run: " + Boolean(audited) + "."
+        ));
         return;
       }
       setTimeout(tick, 50);
