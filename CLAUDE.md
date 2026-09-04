@@ -37,6 +37,19 @@ To run a single check, call its entry directly — `TESTS` is an array of
 QA.selftest.TESTS.find(t => t[0].startsWith("T18"))[1]()
 ```
 
+Headlessly — this is what CI runs on every push, and the fastest way to
+check your own change:
+
+```bash
+node ci/run-self-tests.mjs   # exits non-zero if any check fails
+```
+
+`ci/run-self-tests.mjs` serves the folder over http and drives Chrome via the
+DevTools Protocol using only Node built-ins. Keep it dependency-free: a
+`node_modules` tree next to a project whose premise is that it has none would
+be its own kind of bug. It serves over http rather than `file://` because
+check T20 asserts the CSP is present and enforced.
+
 Run the full twenty after any change under `js/`. All twenty must pass; a
 failure here is the only regression signal this project has.
 

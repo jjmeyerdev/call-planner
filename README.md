@@ -1,5 +1,6 @@
 # Call Planner
 
+[![Self-tests](https://github.com/jjmeyerdev/call-planner/actions/workflows/self-test.yml/badge.svg)](https://github.com/jjmeyerdev/call-planner/actions/workflows/self-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An offline workspace that turns a validated list of test scenarios into a
@@ -95,6 +96,17 @@ handling, import validation, determinism, and the offline guarantee. They
 use data built in memory and touch nothing you have loaded.
 
 Run it after any change to the files in `js/`. All twenty should pass.
+
+The same twenty run automatically on every push, in headless Chrome, via
+`ci/run-self-tests.mjs`. To run them that way yourself:
+
+```bash
+node ci/run-self-tests.mjs
+```
+
+It serves the folder, drives Chrome over the DevTools Protocol, prints each
+check and exits non-zero if any fail. Like the application, it has no
+dependencies; it needs only Node and a Chrome or Chromium on the machine.
 
 ## Where things live
 

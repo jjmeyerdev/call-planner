@@ -1,0 +1,43 @@
+name: Self-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an in-flight run irrelevant.
+concurrency:
+  group: self-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  self-tests:
+    name: Twenty checks in headless Chrome
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node is used only to serve the folder and drive Chrome over
+      # the DevTools Protocol. There is nothing to install: the
+      # runner script has no dependencies, and neither does the app.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Locate Chrome
+        run: |
+          for candidate in /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium /usr/bin/chromium-browser; do
+            if [ -x "$candidate" ]; then
+              echo "CHROME_PATH=$candidate" >> "$GITHUB_ENV"
+              "$candidate" --version
+              exit 0
+            fi
+          done
+          echo "No Chrome or Chromium on this runner image." >&2
+          exit 1
+
+      - name: Run the self-test suite
+        run: node ci/run-self-tests.mjs
